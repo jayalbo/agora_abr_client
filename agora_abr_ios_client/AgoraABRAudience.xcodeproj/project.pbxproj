@@ -1,0 +1,339 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 63;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		253AA2A0600C31B549484B4F /* RtcBasic in Frameworks */ = {isa = PBXBuildFile; productRef = 175D368C60099B1FBE12DF3C /* RtcBasic */; };
+		2E7981B278CB968F0A0D97D5 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FDCBBB80BD2CD6337592EEE /* ContentView.swift */; };
+		44BD937C8B19DB864F0CB08A /* AgoraAudienceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5833383D02B3F26A3D9382B /* AgoraAudienceManager.swift */; };
+		53F5CF3207D116AE7F7447C8 /* AgoraABRAudienceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A49A56B8A12C89EA20C12DD /* AgoraABRAudienceApp.swift */; };
+		B31BAE120BA94B3D8CDE578B /* RemoteVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F17ADD5FB07875F73940EC4 /* RemoteVideoView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		489BF3FAE6F6F1455BA17BA5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		7FDCBBB80BD2CD6337592EEE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		896D07DD05BCD8E5A731FA29 /* AgoraABRAudience.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AgoraABRAudience.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8F17ADD5FB07875F73940EC4 /* RemoteVideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteVideoView.swift; sourceTree = "<group>"; };
+		9A49A56B8A12C89EA20C12DD /* AgoraABRAudienceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgoraABRAudienceApp.swift; sourceTree = "<group>"; };
+		A5833383D02B3F26A3D9382B /* AgoraAudienceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgoraAudienceManager.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D9189D56BE459E1F599CE05E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				253AA2A0600C31B549484B4F /* RtcBasic in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3F2349991078958527661ED8 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				9A49A56B8A12C89EA20C12DD /* AgoraABRAudienceApp.swift */,
+				A5833383D02B3F26A3D9382B /* AgoraAudienceManager.swift */,
+				7FDCBBB80BD2CD6337592EEE /* ContentView.swift */,
+				8F17ADD5FB07875F73940EC4 /* RemoteVideoView.swift */,
+			);
+			name = Sources;
+			path = AgoraABRAudience/Sources;
+			sourceTree = "<group>";
+		};
+		7989DC1BA531AF95BC6B1BF7 = {
+			isa = PBXGroup;
+			children = (
+				9789695E1F02023BF245CB30 /* Resources */,
+				3F2349991078958527661ED8 /* Sources */,
+				AFF806F966838C8C929B0E0C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		9789695E1F02023BF245CB30 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				489BF3FAE6F6F1455BA17BA5 /* Info.plist */,
+			);
+			name = Resources;
+			path = AgoraABRAudience/Resources;
+			sourceTree = "<group>";
+		};
+		AFF806F966838C8C929B0E0C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				896D07DD05BCD8E5A731FA29 /* AgoraABRAudience.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E8C0EFAA05D408000ADF42E2 /* AgoraABRAudience */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1D47CA12BFB60F9B907F8F33 /* Build configuration list for PBXNativeTarget "AgoraABRAudience" */;
+			buildPhases = (
+				4DA09CEA0E60D041AA870248 /* Sources */,
+				D9189D56BE459E1F599CE05E /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AgoraABRAudience;
+			packageProductDependencies = (
+				175D368C60099B1FBE12DF3C /* RtcBasic */,
+			);
+			productName = AgoraABRAudience;
+			productReference = 896D07DD05BCD8E5A731FA29 /* AgoraABRAudience.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		32939219FA18A0CC90D59CFA /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+			};
+			buildConfigurationList = F1B9C8705E6C9B32B665E697 /* Build configuration list for PBXProject "AgoraABRAudience" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 7989DC1BA531AF95BC6B1BF7;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C0DE7798A7A78121FCEBB388 /* XCRemoteSwiftPackageReference "AgoraRtcEngine_iOS" */,
+			);
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E8C0EFAA05D408000ADF42E2 /* AgoraABRAudience */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4DA09CEA0E60D041AA870248 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				53F5CF3207D116AE7F7447C8 /* AgoraABRAudienceApp.swift in Sources */,
+				44BD937C8B19DB864F0CB08A /* AgoraAudienceManager.swift in Sources */,
+				2E7981B278CB968F0A0D97D5 /* ContentView.swift in Sources */,
+				B31BAE120BA94B3D8CDE578B /* RemoteVideoView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		554393A11FF18A1CE662E9EE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = J275J6VF64;
+				INFOPLIST_FILE = AgoraABRAudience/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		631F4A2935296C9235804C49 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = J275J6VF64;
+				INFOPLIST_FILE = AgoraABRAudience/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		7C8258BF91A12E6BDD1A99D7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.AgoraABRAudience;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		E84F04DD108213ADD734E339 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.AgoraABRAudience;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1D47CA12BFB60F9B907F8F33 /* Build configuration list for PBXNativeTarget "AgoraABRAudience" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				631F4A2935296C9235804C49 /* Debug */,
+				554393A11FF18A1CE662E9EE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F1B9C8705E6C9B32B665E697 /* Build configuration list for PBXProject "AgoraABRAudience" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7C8258BF91A12E6BDD1A99D7 /* Debug */,
+				E84F04DD108213ADD734E339 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C0DE7798A7A78121FCEBB388 /* XCRemoteSwiftPackageReference "AgoraRtcEngine_iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/AgoraIO/AgoraRtcEngine_iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.6.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		175D368C60099B1FBE12DF3C /* RtcBasic */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0DE7798A7A78121FCEBB388 /* XCRemoteSwiftPackageReference "AgoraRtcEngine_iOS" */;
+			productName = RtcBasic;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 32939219FA18A0CC90D59CFA /* Project object */;
+}
