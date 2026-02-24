@@ -10,6 +10,11 @@ The editable source image is:
 
 ## Replace with your own icon
 
+Tool requirement:
+
+- Python 3
+- Pillow (`pip install pillow`)
+
 1. Prepare a PNG file that is:
    - `1024x1024` pixels
    - square
