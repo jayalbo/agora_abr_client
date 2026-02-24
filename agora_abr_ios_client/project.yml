@@ -7,6 +7,7 @@ settings:
   base:
     SWIFT_VERSION: 5.9
     PRODUCT_BUNDLE_IDENTIFIER: com.example.AgoraABRAudience
+    ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
 packages:
   AgoraRtcEngine_iOS:
     url: https://github.com/AgoraIO/AgoraRtcEngine_iOS

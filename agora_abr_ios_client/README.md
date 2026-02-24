@@ -53,3 +53,8 @@ open AgoraABRAudience.xcodeproj
 ## iOS privacy keys
 
 `Info.plist` already includes microphone and camera usage descriptions required by Agora.
+
+## App icon
+
+- A generated icon set is included in `AgoraABRAudience/Resources/Assets.xcassets/AppIcon.appiconset`.
+- To replace it with your own PNG and regenerate required sizes, follow `IOS_ICON.md`.
