@@ -26,6 +26,7 @@ targets:
       path: AgoraABRAudience/Resources/Info.plist
       properties:
         UILaunchScreen: {}
+        UILaunchStoryboardName: LaunchScreen
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
         NSCameraUsageDescription: Camera access is needed to render and test Agora video.

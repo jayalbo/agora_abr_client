@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct ContentView: View {
     @StateObject private var manager = AgoraAudienceManager()
@@ -6,6 +7,7 @@ struct ContentView: View {
     @State private var appId = ""
     @State private var channel = ""
     @State private var token = ""
+    @State private var uidText: String = ""
 
     var body: some View {
         NavigationView {
@@ -28,6 +30,12 @@ struct ContentView: View {
                                 .autocorrectionDisabled(true)
                                 .textFieldStyle(.roundedBorder)
 
+                            TextField("UID (optional, integer)", text: $uidText)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled(true)
+                                .keyboardType(.numberPad)
+                                .textFieldStyle(.roundedBorder)
+
                             Picker("Video Layer", selection: $manager.layerMode) {
                                 ForEach(LayerMode.allCases) { mode in
                                     Text(mode.label).tag(mode)
@@ -39,17 +47,27 @@ struct ContentView: View {
                             }
 
                             HStack {
-                                Button("Join") {
-                                    manager.join(appId: appId, channel: channel, token: token)
+                                Button(action: {
+                                    let trimmedUID = uidText.trimmingCharacters(in: .whitespacesAndNewlines)
+                                    let uid: UInt? = UInt(trimmedUID)
+                                    manager.join(appId: appId, channel: channel, token: token, uid: uid)
+                                }) {
+                                    HStack(spacing: 6) {
+                                        if manager.isJoining {
+                                            ProgressView()
+                                                .progressViewStyle(.circular)
+                                        }
+                                        Text(manager.isJoining ? "Joining…" : "Join")
+                                    }
                                 }
                                 .buttonStyle(.borderedProminent)
-                                .disabled(manager.isJoined)
+                                .disabled(manager.isJoined || manager.isJoining)
 
                                 Button("Leave") {
                                     manager.leave()
                                 }
                                 .buttonStyle(.bordered)
-                                .disabled(!manager.isJoined)
+                                .disabled(!manager.isJoined || manager.isJoining)
                             }
                         }
                     }
@@ -85,6 +103,30 @@ struct ContentView: View {
 
                     GroupBox("Log") {
                         VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Spacer()
+                                if let url = manager.logFileURL() {
+                                    if #available(iOS 16.0, *) {
+                                        ShareLink(item: url) {
+                                            Label("Share Log", systemImage: "square.and.arrow.up")
+                                        }
+                                    } else {
+                                        Button {
+                                            presentShare()
+                                        } label: {
+                                            Label("Share Log", systemImage: "square.and.arrow.up")
+                                        }
+                                    }
+                                } else {
+                                    Button {
+                                        // No log file yet; you can optionally append a log here.
+                                        // manager.appendLog("No Agora log file found to share.")
+                                    } label: {
+                                        Label("Share Log", systemImage: "square.and.arrow.up")
+                                    }
+                                    .disabled(true)
+                                }
+                            }
                             ScrollViewReader { proxy in
                                 ScrollView {
                                     LazyVStack(alignment: .leading, spacing: 6) {
@@ -115,4 +157,14 @@ struct ContentView: View {
             .navigationTitle("Agora AV Subscriber")
         }
     }
+    
+    private func presentShare() {
+        guard let root = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .flatMap({ $0.windows })
+            .first(where: { $0.isKeyWindow })?
+            .rootViewController else { return }
+        manager.presentLogShare(from: root)
+    }
 }
+

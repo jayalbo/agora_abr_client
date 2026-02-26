@@ -73,10 +73,24 @@ struct RemoteMediaStats {
 
 final class AgoraAudienceManager: NSObject, ObservableObject {
     @Published var isJoined = false
+    @Published var isJoining = false
     @Published var logs: [String] = []
     @Published var remoteUsers: [UInt] = []
     @Published var layerMode: LayerMode = .auto
     @Published var remoteStats: [UInt: RemoteMediaStats] = [:]
+
+    /// Retrieves the current Agora call ID (if available) and appends it to the logs.
+    func logCurrentCallId() {
+        guard let engine else {
+            appendLog("Call ID unavailable: engine not initialized.")
+            return
+        }
+        if let callId = engine.getCallId() {
+            appendLog("Call ID: \(callId)")
+        } else {
+            appendLog("Call ID unavailable: not in a call or SDK did not return an ID.")
+        }
+    }
 
     private let maxLogLines = 500
 
@@ -98,7 +112,7 @@ final class AgoraAudienceManager: NSObject, ObservableObject {
         AgoraRtcEngineKit.destroy()
     }
 
-    func join(appId: String, channel: String, token: String?) {
+    func join(appId: String, channel: String, token: String?, uid: UInt? = nil) {
         let cleanAppId = appId.trimmingCharacters(in: .whitespacesAndNewlines)
         let cleanChannel = channel.trimmingCharacters(in: .whitespacesAndNewlines)
 
@@ -124,6 +138,8 @@ final class AgoraAudienceManager: NSObject, ObservableObject {
             return
         }
 
+        isJoining = true
+
         engine.enableAudio()
         engine.enableVideo()
         engine.setChannelProfile(.liveBroadcasting)
@@ -131,19 +147,24 @@ final class AgoraAudienceManager: NSObject, ObservableObject {
 
         applyLayerModeToEngine()
 
-        let result = engine.joinChannel(byToken: (token?.isEmpty == true ? nil : token), channelId: cleanChannel, info: nil, uid: 0) { [weak self] _, uid, _ in
+        let desiredUID: UInt = uid ?? 0
+        let result = engine.joinChannel(byToken: (token?.isEmpty == true ? nil : token), channelId: cleanChannel, info: nil, uid: desiredUID) { [weak self] _, uid, _ in
             DispatchQueue.main.async {
+                self?.isJoining = false
                 self?.isJoined = true
                 self?.appendLog("Joined channel=\"\(cleanChannel)\" as audience (uid=\(uid)).")
+                self?.logCurrentCallId()
             }
         }
 
         if result != 0 {
+            isJoining = false
             appendLog("Join failed immediately with code=\(result)")
         }
     }
 
     func leave() {
+        isJoining = false
         guard let engine else { return }
 
         engine.leaveChannel(nil)
@@ -274,7 +295,7 @@ extension AgoraAudienceManager: AgoraRtcEngineDelegate {
             current.fps = Int(stats.rendererOutputFrameRate)
             current.videoBitrateKbps = Int(stats.receivedBitrate)
             current.packetLossRate = Int(stats.packetLossRate)
-            current.delayMs = Int(stats.delay)
+            current.delayMs = Int(stats.e2eDelay)
             self.remoteStats[stats.uid] = current
         }
     }
@@ -290,10 +311,58 @@ extension AgoraAudienceManager: AgoraRtcEngineDelegate {
 
     func rtcEngine(_ engine: AgoraRtcEngineKit, networkQuality uid: UInt, txQuality: AgoraNetworkQuality, rxQuality: AgoraNetworkQuality) {
         DispatchQueue.main.async {
-            if uid == 0 {
+            if uid == 0 && self.isJoined {
                 self.appendLog("Network quality: uplink=\(txQuality.rawValue), downlink=\(rxQuality.rawValue)")
             }
         }
     }
 
+    func rtcEngine(_ engine: AgoraRtcEngineKit, didOccurError errorCode: AgoraErrorCode) {
+        DispatchQueue.main.async {
+            self.isJoining = false
+            // If an error occurs during or after join, ensure UI reflects not joined
+            if self.isJoined {
+                // Let the SDK manage state, but reflect that we're no longer joined on fatal errors
+                // Some errors are non-fatal; we conservatively log and keep state if needed.
+            } else {
+                self.isJoined = false
+            }
+            self.appendLog("Agora error: \(self.describeAgoraError(errorCode))")
+        }
+    }
+
+    func rtcEngine(_ engine: AgoraRtcEngineKit, connectionChangedTo state: AgoraConnectionState, reason: AgoraConnectionChangedReason) {
+        DispatchQueue.main.async {
+            self.appendLog("Connection state changed: state=\(state.rawValue), reason=\(reason.rawValue)")
+            switch state {
+            case .failed, .disconnected:
+                self.isJoining = false
+                self.isJoined = false
+            default:
+                break
+            }
+        }
+    }
+
+    func rtcEngine(_ engine: AgoraRtcEngineKit, didLeaveChannelWith stats: AgoraChannelStats) {
+        DispatchQueue.main.async {
+            self.appendLog("Left channel (SDK callback). Duration=\(stats.duration)s")
+            self.isJoined = false
+            self.isJoining = false
+            self.remoteUsers = []
+            self.remoteStats = [:]
+            self.remoteVideoViews = [:]
+        }
+    }
+
+    private func describeAgoraError(_ code: AgoraErrorCode) -> String {
+        switch code {
+        case .invalidAppId: return "INVALID_APP_ID (\(code.rawValue))"
+        case .invalidToken: return "INVALID_TOKEN (\(code.rawValue))"
+        case .tokenExpired: return "TOKEN_EXPIRED (\(code.rawValue))"
+        case .joinChannelRejected: return "JOIN_CHANNEL_REJECTED (\(code.rawValue))"
+        default: return "code=\(code.rawValue)"
+        }
+    }
 }
+
