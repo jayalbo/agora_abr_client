@@ -6,3 +6,9 @@
 *.xcworkspace
 xcuserdata/
 *.xcuserstate
+
+# CocoaPods (this project uses SPM only; do not run pod install)
+agora_abr_ios_client/Pods/
+
+# Device log capture output
+agora_abr_ios_client/scripts/device_log.txt

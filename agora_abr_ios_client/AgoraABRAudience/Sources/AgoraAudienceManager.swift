@@ -2,6 +2,49 @@ import Foundation
 import AgoraRtcKit
 import UIKit
 
+/// Host publish resolution (encoder configuration). Only applies when joining as host.
+enum HostResolution: String, CaseIterable, Identifiable {
+    case r360p   // 640×360
+    case r480p   // 848×480
+    case r720p   // 1280×720 (default)
+    case r1080p  // 1920×1080
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .r360p: return "360p"
+        case .r480p: return "480p"
+        case .r720p: return "720p"
+        case .r1080p: return "1080p"
+        }
+    }
+
+    var size: CGSize {
+        switch self {
+        case .r360p: return CGSize(width: 640, height: 360)
+        case .r480p: return CGSize(width: 848, height: 480)
+        case .r720p: return CGSize(width: 1280, height: 720)
+        case .r1080p: return CGSize(width: 1920, height: 1080)
+        }
+    }
+}
+
+/// User role in the live channel: audience (subscribe only) or host (can publish and subscribe).
+enum ClientRole: String, CaseIterable, Identifiable {
+    case audience
+    case host
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .audience: return "Audience"
+        case .host: return "Host (publish)"
+        }
+    }
+}
+
 enum LayerMode: String, CaseIterable, Identifiable {
     case auto
     case high
@@ -78,6 +121,17 @@ final class AgoraAudienceManager: NSObject, ObservableObject {
     @Published var remoteUsers: [UInt] = []
     @Published var layerMode: LayerMode = .auto
     @Published var remoteStats: [UInt: RemoteMediaStats] = [:]
+    @Published var clientRole: ClientRole = .audience
+    /// When true, local video view is available (host role and preview/stream started).
+    @Published var isHostPublishing = false
+    /// Host: whether local video capture is enabled (can toggle without leaving).
+    @Published var isLocalVideoEnabled = true
+    /// Host: whether local audio (microphone) is enabled (can toggle without leaving).
+    @Published var isLocalAudioEnabled = true
+    /// Host: when false, iOS camera switching behavior can be changed (setParameters unlock).
+    @Published var cameraSwitchingBehaviorLocked = true
+    /// Host: publish resolution (applied when joining as host). Default 720p.
+    @Published var hostResolution: HostResolution = .r720p
 
     /// Retrieves the current Agora call ID (if available) and appends it to the logs.
     func logCurrentCallId() {
@@ -96,6 +150,7 @@ final class AgoraAudienceManager: NSObject, ObservableObject {
 
     private var engine: AgoraRtcEngineKit?
     private var remoteVideoViews: [UInt: UIView] = [:]
+    private var localVideoView: UIView?
 
     private static let logTimeFormatter: DateFormatter = {
         let df = DateFormatter()
@@ -141,18 +196,51 @@ final class AgoraAudienceManager: NSObject, ObservableObject {
         isJoining = true
 
         engine.enableAudio()
+
+        if clientRole == .host {
+            let encConfig = AgoraVideoEncoderConfiguration(
+                size: hostResolution.size,
+                frameRate: 30,
+                bitrate: AgoraVideoBitrateStandard,
+                orientationMode: .adaptative,
+                mirrorMode: .auto
+            )
+            encConfig.degradationPreference = AgoraDegradationPreference.maintainQuality
+            encConfig.minBitrate = AgoraVideoBitrateStandard
+            _ = engine.setVideoEncoderConfiguration(encConfig)
+            appendLog("Host resolution: \(hostResolution.label) (\(Int(hostResolution.size.width))×\(Int(hostResolution.size.height))).")
+        }
+
         engine.enableVideo()
         engine.setChannelProfile(.liveBroadcasting)
-        engine.setClientRole(.audience)
+
+        let role: AgoraClientRole = clientRole == .host ? .broadcaster : .audience
+        engine.setClientRole(role)
+
+        if clientRole == .host {
+            localVideoView = UIView(frame: .zero)
+            localVideoView?.backgroundColor = .black
+            if let view = localVideoView {
+                let canvas = AgoraRtcVideoCanvas()
+                canvas.uid = 0
+                canvas.view = view
+                canvas.renderMode = .hidden
+                engine.setupLocalVideo(canvas)
+                engine.startPreview()
+                applyCameraSwitchingBehaviorLockedToEngine()
+                isHostPublishing = true
+            }
+        }
 
         applyLayerModeToEngine()
 
         let desiredUID: UInt = uid ?? 0
+        let roleLabel = clientRole == .host ? "host" : "audience"
         let result = engine.joinChannel(byToken: (token?.isEmpty == true ? nil : token), channelId: cleanChannel, info: nil, uid: desiredUID) { [weak self] _, uid, _ in
             DispatchQueue.main.async {
                 self?.isJoining = false
                 self?.isJoined = true
-                self?.appendLog("Joined channel=\"\(cleanChannel)\" as audience (uid=\(uid)).")
+                self?.appendLog("Joined channel=\"\(cleanChannel)\" as \(roleLabel) (uid=\(uid)).")
                 self?.logCurrentCallId()
             }
         }
@@ -167,12 +255,74 @@ final class AgoraAudienceManager: NSObject, ObservableObject {
         isJoining = false
         guard let engine else { return }
 
+        if isHostPublishing {
+            engine.stopPreview()
+            isHostPublishing = false
+            localVideoView = nil
+        }
         engine.leaveChannel(nil)
         isJoined = false
         remoteUsers = []
         remoteStats = [:]
         remoteVideoViews = [:]
         appendLog("Left channel.")
+    }
+
+    /// Returns the local video view when acting as host (publishing). Nil for audience or before preview starts.
+    func getLocalVideoView() -> UIView? {
+        localVideoView
+    }
+
+    // MARK: - Host: local video and camera
+
+    /// Enables or disables local video capture (host only). When disabled, remote users no longer see your video.
+    func setLocalVideoEnabled(_ enabled: Bool) {
+        guard let engine, isHostPublishing else { return }
+        engine.enableLocalVideo(enabled)
+        DispatchQueue.main.async { [weak self] in
+            self?.isLocalVideoEnabled = enabled
+            self?.appendLog("Local video \(enabled ? "enabled" : "disabled").")
+        }
+    }
+
+    /// Enables or disables local audio (microphone) capture (host only). When disabled, remote users no longer hear you.
+    func setLocalAudioEnabled(_ enabled: Bool) {
+        guard let engine, isHostPublishing else { return }
+        engine.enableLocalAudio(enabled)
+        DispatchQueue.main.async { [weak self] in
+            self?.isLocalAudioEnabled = enabled
+            self?.appendLog("Local audio \(enabled ? "enabled" : "disabled").")
+        }
+    }
+
+    /// Switches between front and rear camera (host only, iOS/Android).
+    func switchCamera() {
+        guard let engine, isHostPublishing else { return }
+        let result = engine.switchCamera()
+        DispatchQueue.main.async { [weak self] in
+            if result == 0 {
+                self?.appendLog("Camera switched.")
+            } else {
+                self?.appendLog("switchCamera failed: \(result).")
+            }
+        }
+    }
+
+    /// When false, allows changing iOS camera switching behavior. Apply before or after join as host.
+    func setCameraSwitchingBehaviorLocked(_ locked: Bool) {
+        cameraSwitchingBehaviorLocked = locked
+        applyCameraSwitchingBehaviorLockedToEngine()
+        appendLog("Camera switching behavior locked=\(locked).")
+    }
+
+    private func applyCameraSwitchingBehaviorLockedToEngine() {
+        guard let engine else { return }
+        let value = cameraSwitchingBehaviorLocked ? "true" : "false"
+        let json = "{\"rtc.video.ios_camera_switching_behavior_locked\":\(value)}"
+        let result = engine.setParameters(json)
+        if result != 0 {
+            appendLog("setParameters(ios_camera_switching_behavior_locked) failed: \(result).")
+        }
     }
 
     func videoView(for uid: UInt) -> UIView {
@@ -235,6 +385,13 @@ final class AgoraAudienceManager: NSObject, ObservableObject {
             }
             _ = engine.setRemoteVideoStream(uid, type: streamType)
             appendLog("Layer mode applied to uid=\(uid): \(layerMode.label)")
+        }
+    }
+
+    /// Public helper to log UI-driven events from views.
+    func logUIEvent(_ message: String) {
+        DispatchQueue.main.async { [weak self] in
+            self?.appendLog("UI: \(message)")
         }
     }
 
@@ -320,11 +477,7 @@ extension AgoraAudienceManager: AgoraRtcEngineDelegate {
     func rtcEngine(_ engine: AgoraRtcEngineKit, didOccurError errorCode: AgoraErrorCode) {
         DispatchQueue.main.async {
             self.isJoining = false
-            // If an error occurs during or after join, ensure UI reflects not joined
-            if self.isJoined {
-                // Let the SDK manage state, but reflect that we're no longer joined on fatal errors
-                // Some errors are non-fatal; we conservatively log and keep state if needed.
-            } else {
+            if !self.isJoined {
                 self.isJoined = false
             }
             self.appendLog("Agora error: \(self.describeAgoraError(errorCode))")
@@ -349,6 +502,8 @@ extension AgoraAudienceManager: AgoraRtcEngineDelegate {
             self.appendLog("Left channel (SDK callback). Duration=\(stats.duration)s")
             self.isJoined = false
             self.isJoining = false
+            self.isHostPublishing = false
+            self.localVideoView = nil
             self.remoteUsers = []
             self.remoteStats = [:]
             self.remoteVideoViews = [:]
@@ -365,4 +520,3 @@ extension AgoraAudienceManager: AgoraRtcEngineDelegate {
         }
     }
 }
-

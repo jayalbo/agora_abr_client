@@ -36,6 +36,30 @@ struct ContentView: View {
                                 .keyboardType(.numberPad)
                                 .textFieldStyle(.roundedBorder)
 
+                            Picker("Role", selection: $manager.clientRole) {
+                                ForEach(ClientRole.allCases) { role in
+                                    Text(role.label).tag(role)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                            .disabled(manager.isJoined || manager.isJoining)
+                            .onChange(of: manager.clientRole) { role in
+                                manager.logUIEvent("Role changed to \(role.label)")
+                            }
+
+                            if manager.clientRole == .host {
+                                Picker("Host resolution", selection: $manager.hostResolution) {
+                                    ForEach(HostResolution.allCases) { res in
+                                        Text(res.label).tag(res)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .disabled(manager.isJoined || manager.isJoining)
+                                .onChange(of: manager.hostResolution) { res in
+                                    manager.logUIEvent("Host resolution set to \(res.label)")
+                                }
+                            }
+
                             Picker("Video Layer", selection: $manager.layerMode) {
                                 ForEach(LayerMode.allCases) { mode in
                                     Text(mode.label).tag(mode)
@@ -43,6 +67,7 @@ struct ContentView: View {
                             }
                             .pickerStyle(.menu)
                             .onChange(of: manager.layerMode) { mode in
+                                manager.logUIEvent("Video layer set to \(mode.label)")
                                 manager.applyLayerMode(mode)
                             }
 
@@ -50,6 +75,7 @@ struct ContentView: View {
                                 Button(action: {
                                     let trimmedUID = uidText.trimmingCharacters(in: .whitespacesAndNewlines)
                                     let uid: UInt? = UInt(trimmedUID)
+                                    manager.logUIEvent("Join tapped: appId=\(appId.isEmpty ? "<empty>" : "•••"), channel=\(channel), token=\(token.isEmpty ? "<empty>" : "•••"), uid=\(uid.map(String.init) ?? "auto")")
                                     manager.join(appId: appId, channel: channel, token: token, uid: uid)
                                 }) {
                                     HStack(spacing: 6) {
@@ -64,10 +90,75 @@ struct ContentView: View {
                                 .disabled(manager.isJoined || manager.isJoining)
 
                                 Button("Leave") {
+                                    manager.logUIEvent("Leave tapped")
                                     manager.leave()
                                 }
                                 .buttonStyle(.bordered)
                                 .disabled(!manager.isJoined || manager.isJoining)
+                            }
+                        }
+                    }
+
+                    if manager.isHostPublishing {
+                        GroupBox("Local Video (Host)") {
+                            VStack(alignment: .leading, spacing: 10) {
+                                ZStack(alignment: .center) {
+                                    LocalVideoView(manager: manager)
+                                        .frame(height: 220)
+                                        .clipShape(RoundedRectangle(cornerRadius: 10))
+
+                                    if !manager.isLocalVideoEnabled {
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .fill(Color.black.opacity(0.85))
+                                            .frame(height: 220)
+                                            .overlay {
+                                                VStack(spacing: 8) {
+                                                    Image(systemName: "video.slash")
+                                                        .font(.system(size: 44))
+                                                        .foregroundColor(.white.opacity(0.8))
+                                                    Text("Video off")
+                                                        .font(.headline)
+                                                        .foregroundColor(.white.opacity(0.9))
+                                                }
+                                            }
+                                    }
+                                }
+                                .frame(height: 220)
+
+                                HStack(spacing: 16) {
+                                    Toggle("Video", isOn: Binding(
+                                        get: { manager.isLocalVideoEnabled },
+                                        set: {
+                                            manager.logUIEvent("Local video \($0 ? "enabled" : "disabled")")
+                                            manager.setLocalVideoEnabled($0)
+                                        }
+                                    ))
+                                    .fixedSize(horizontal: true, vertical: false)
+
+                                    Toggle("Audio", isOn: Binding(
+                                        get: { manager.isLocalAudioEnabled },
+                                        set: {
+                                            manager.logUIEvent("Local audio \($0 ? "enabled" : "disabled")")
+                                            manager.setLocalAudioEnabled($0)
+                                        }
+                                    ))
+                                    .fixedSize(horizontal: true, vertical: false)
+
+                                    Button("Switch camera") {
+                                        manager.logUIEvent("Switch camera tapped")
+                                        manager.switchCamera()
+                                    }
+                                    .buttonStyle(.bordered)
+                                }
+
+                                Toggle("Unlock camera switching behavior", isOn: Binding(
+                                    get: { !manager.cameraSwitchingBehaviorLocked },
+                                    set: {
+                                        manager.logUIEvent("Camera switching behavior unlocked=\($0)")
+                                        manager.setCameraSwitchingBehaviorLocked(!$0)
+                                    }
+                                ))
+                                .font(.subheadline)
                             }
                         }
                     }
@@ -119,8 +210,6 @@ struct ContentView: View {
                                     }
                                 } else {
                                     Button {
-                                        // No log file yet; you can optionally append a log here.
-                                        // manager.appendLog("No Agora log file found to share.")
                                     } label: {
                                         Label("Share Log", systemImage: "square.and.arrow.up")
                                     }
@@ -140,7 +229,6 @@ struct ContentView: View {
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                 }
                                 .onChange(of: manager.logs.count) { _ in
-                                    // Auto-scroll to bottom as new logs arrive
                                     if let last = manager.logs.indices.last {
                                         withAnimation(.easeOut(duration: 0.2)) {
                                             proxy.scrollTo(last, anchor: .bottom)
@@ -157,13 +245,14 @@ struct ContentView: View {
             .navigationTitle("Agora AV Subscriber")
         }
     }
-    
+
     private func presentShare() {
         guard let root = UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
             .flatMap({ $0.windows })
             .first(where: { $0.isKeyWindow })?
             .rootViewController else { return }
+        manager.logUIEvent("Share Log tapped")
         manager.presentLogShare(from: root)
     }
 }

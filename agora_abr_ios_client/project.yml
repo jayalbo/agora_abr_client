@@ -19,6 +19,36 @@ targets:
     dependencies:
       - package: AgoraRtcEngine_iOS
         product: RtcBasic
+    postbuildScripts:
+      - name: Strip invalid architectures (device)
+        script: |
+          if [ "${SDKROOT}" = "iphoneos" ] && [ -d "${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}" ]; then
+            APP_PATH="${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}"
+            find "$APP_PATH" -name '*.framework' -type d | while read -r FRAMEWORK; do
+              FRAMEWORK_EXECUTABLE_NAME=$(defaults read "$FRAMEWORK/Info.plist" CFBundleExecutable 2>/dev/null)
+              [ -z "$FRAMEWORK_EXECUTABLE_NAME" ] && continue
+              FRAMEWORK_EXECUTABLE_PATH="$FRAMEWORK/$FRAMEWORK_EXECUTABLE_NAME"
+              [ ! -f "$FRAMEWORK_EXECUTABLE_PATH" ] && continue
+              archs=$(lipo -info "$FRAMEWORK_EXECUTABLE_PATH" 2>/dev/null | rev | cut -d ':' -f1 | rev)
+              for arch in $archs; do
+                if ! [[ "${ARCHS}" == *"$arch"* ]]; then
+                  lipo -remove "$arch" -output "$FRAMEWORK_EXECUTABLE_PATH" "$FRAMEWORK_EXECUTABLE_PATH" 2>/dev/null || true
+                fi
+              done
+            done
+          fi
+      - name: Re-sign embedded frameworks for device
+        script: |
+          if [ "${SDKROOT}" = "iphoneos" ] && [ -d "${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}" ]; then
+            for f in "${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}"/*.framework; do
+              [ -d "$f" ] || continue
+              codesign --force --sign "${EXPANDED_CODE_SIGN_IDENTITY}" --preserve-metadata=identifier,entitlements "$f" 2>/dev/null || true
+            done
+            APP_PATH="${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}"
+            find "$APP_PATH" -name '*.framework' -type d | while read -r f; do
+              codesign --force --sign "${EXPANDED_CODE_SIGN_IDENTITY}" --preserve-metadata=identifier,entitlements "$f" 2>/dev/null || true
+            done
+          fi
     sources:
       - path: AgoraABRAudience/Sources
       - path: AgoraABRAudience/Resources
